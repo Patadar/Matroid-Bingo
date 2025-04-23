@@ -6,12 +6,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 #from collections import Counter
 from Matroids import Matroid
+import itertools
 
 
 class Bingo():
     def __init__(self, matroid):
         self.distribution_ran = False
+        self.brute_ran = False
         self.deck = matroid.circuits
+        self.ground_set = matroid.ground_list
         self.deck_size = matroid.circuit_count
         self.card_num = matroid.size
 
@@ -27,6 +30,24 @@ class Bingo():
                     winner = self.deck.index(card)
                     done = True
         return winner
+    
+    def brute_probability(self):
+        self.brute_ran = True
+        games = itertools.permutations(self.ground_set)
+        self.iterations = 0
+        self.win_list = [0 for i in range(self.deck_size)]
+        for i in games:
+            self.iterations +=1
+            game = set()
+            for num in i:
+                game.add(num)
+                for c in range(len(self.deck)):
+                    if set(self.deck[c]) <= game:
+                        self.win_list[c] +=1
+                        break
+                else:
+                    continue     
+                break
 
     def distribution(self, iterations = 100):
         self.iterations = iterations
@@ -38,7 +59,8 @@ class Bingo():
 
     def distribution_results(self):
         if self.distribution_ran == False:
-            self.distribution()
+            if self.brute_ran == False:
+                self.brute_probability()
             
         plt.plot([f"C{i}" for i in range(1, self.deck_size+1)], self.win_list, label="temp")
         plt.xlabel("Cards")
@@ -61,7 +83,8 @@ class Bingo():
 
     def probability_results(self):
         if self.distribution_ran == False:
-            self.distribution()
+            if self.brute_ran == False:
+                self.brute_probability()
 
         plt.scatter([f"C{i}" for i in range(1, self.deck_size+1)], np.array(self.win_list)/self.iterations, label="Probabilities")
         av = 1/self.deck_size
@@ -96,20 +119,25 @@ if __name__ == "__main__":
     #game.distribution_results()
     #game.probability_results()
 
-    game2 = Bingo(Matroid({1, 2, 3, 4, 5, 6, 7}, [{1, 2, 3, 4},{1, 5, 6},{1, 5, 7}, {1, 5, 6, 7}, {2, 3, 4, 5, 6, 7}]))
-    game2.distribution(iterations=1000)
-    game2.distribution_results()
-    game2.probability_results()
+
+    # game1 = Bingo(Matroid({1, 2, 3, 4, 5, 6, 7}, [{1, 2, 3, 4},{6, 7, 2, 3}, {4, 7, 5}, {1, 5, 6}, {1, 4, 7, 6}, {4, 5, 6, 2, 3}, {1, 5, 7, 2, 3}]))
+    # game1.distribution(iterations=1000)
+    # game1.distribution_results()
+    # game1.probability_results()
+
+    # game2 = Bingo(Matroid({1, 2, 3, 4, 5, 6, 7}, [{1, 2, 3, 4},{6, 7, 2, 3}, {4, 7, 5}, {1, 5, 6}, {1, 4, 7, 6}, {4, 5, 6, 2, 3}, {1, 5, 7, 2, 3}]))
+    # game2.distribution_results()
+    # game2.probability_results()
+
 
     game3 = Bingo(Matroid.brute_generate(5, 5, method="m", isomorphisms=False))
     print(game3.deck)
-    game3.distribution(iterations=1000)
     game3.distribution_results()
     game3.probability_results()
 
-    game4 = Bingo(Matroid.brute_generate(5, 5))
-    print(game4.deck)
-    game4.distribution(iterations=1000)
-    game4.distribution_results()
-    game4.probability_results()
 
+    # game4 = Bingo(Matroid.brute_generate(5, 5))
+    # print(game4.deck)
+    # game4.distribution(iterations=1000)
+    # game4.distribution_results()
+    # game4.probability_results()
