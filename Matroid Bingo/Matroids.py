@@ -4,6 +4,7 @@
 
 import itertools
 import random
+ 
 
 class Matroid():
     def __init__(self, ground_list, circuits):
@@ -24,27 +25,29 @@ class Matroid():
     @classmethod
     def brute_generate(cls, size, circuit_count, method="r", special=None, isomorphisms=True, max_iterations = 100000):
 
-        ground_list = [i for i in range(1, size+1)] 
+        ground_list = range(1, size+1)
         #circuits = [frozenset() for i in range(circuit_count)]
 
         if type(special) == int and special <= size:
-            viable_sets = [frozenset(s) for s in itertools.combinations(ground_list, special)]
-            sized_sets = [s for s in itertools.combinations(viable_sets, circuit_count)]
+            viable_sets = map(frozenset, itertools.combinations(ground_list, special))
 
         elif type(special) == list:
-            viable_sets = [] 
-            for i in special:
-                viable_sets += [frozenset(s) for s in itertools.combinations(ground_list, i)]
-            sized_sets = [s for s in itertools.combinations(viable_sets, circuit_count)]
-
+            viable_sets = map(
+            frozenset,
+            itertools.chain.from_iterable(itertools.combinations(ground_list, k) for k in special)
+            )
+            
         else:
-            viable_sets = [] 
-            for i in ground_list:
-                viable_sets += [frozenset(s) for s in itertools.combinations(ground_list, i)]
-            sized_sets = [s for s in itertools.combinations(viable_sets, circuit_count)]
-        
+            viable_sets = map(
+            frozenset,
+            itertools.chain.from_iterable(itertools.combinations(ground_list, k) for k in range(1, size + 1))
+            )
+
+        sized_sets = itertools.combinations(list(viable_sets), circuit_count)
+        print("Generated Viable Decks")
         match method:
             case "r":
+                sized_sets = list(sized_sets)
                 iterations = 0
                 for i in range(max_iterations):
                     iterations +=1
@@ -55,10 +58,12 @@ class Matroid():
                     else:
                         del sized_sets[r]
                     if iterations == max_iterations:
-                        print("maximum generation iterations reached")
+                        print("Maximum generation iterations reached")
             case "m":
                 circuits_set = [s for s in sized_sets if Matroid.is_circuit_set(s)]
+                print("Found All Circuits")
                 if isomorphisms == False:
+                    print("Removing Isomorphisms")
                     iso_set = set()
                     for p in itertools.permutations(ground_list):              
                         for i in range(len(circuits_set)):
@@ -68,7 +73,6 @@ class Matroid():
                                 c2 = circuits_set[j]            
                                 if set(map(frozenset, permuted)) == set(map(frozenset, c2)):
                                     iso_set.add(c2)
-                    print(iso_set)
                     circuits_set = set(circuits_set) - iso_set
                                 
                 print("Circuit sets:")
@@ -103,23 +107,35 @@ class Matroid():
     @staticmethod
     def is_circuit_set(circuits_set):
         circuit_count = len(circuits_set)
+
         for i in range(circuit_count):
-            if any(circuits_set[i].issubset(s) for s in circuits_set[:i]+circuits_set[i+1:]):         
-                return False
-            
+            c_i = circuits_set[i]
+            for j in range(i + 1, circuit_count):
+                c_j = circuits_set[j]
+                if c_i.issubset(c_j) or c_j.issubset(c_i):
+                    return False         
+        # for i in range(circuit_count):
+        #     if any(circuits_set[i].issubset(s) for s in circuits_set[:i]+circuits_set[i+1:]):         
+        #         return False
         for i in range(circuit_count):
+            c1 = circuits_set[i]
             for j in range(i+1, circuit_count):
-                c1, c2 = circuits_set[i], circuits_set[j]
+                c2 = circuits_set[j]
                 common = c1 & c2
+                if not common:
+                    continue
+                union = c1 | c2
                 for x in common:
-                    union_minus_x = (c1 | c2) - {x}
-                    found = False
-                    for c3 in circuits_set:
-                        if c3.issubset(union_minus_x):
-                            found = True
-                            break
-                    if not found:
+                    union_minus_x = union - {x}
+                    if not any(c3 <= union_minus_x for k, c3 in enumerate(circuits_set) if k != i and k != j):
                         return False
+                    # found = False
+                    # for c3 in circuits_set:
+                    #     if c3.issubset(union_minus_x):
+                    #         found = True
+                    #         break
+                    # if not found:
+                    #     return False
                         
         return True
     
@@ -152,5 +168,3 @@ if __name__ == "__main__":
     print(M.circuit_count)
     print(M.size)
     print(M)
-
-    
