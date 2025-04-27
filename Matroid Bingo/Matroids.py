@@ -4,7 +4,10 @@
 
 import itertools
 import random
+import multiprocessing
  
+def _filter_chunk(chunk):
+    return [cs for cs in chunk if Matroid.is_circuit_set(cs)]
 
 class Matroid():
     def __init__(self, ground_list, circuits):
@@ -23,7 +26,7 @@ class Matroid():
         return f"({self.ground_list}, {self.circuits})"
     
     @classmethod
-    def brute_generate(cls, size, circuit_count, method="r", special=None, isomorphisms=True, max_iterations = 100000):
+    def brute_generate(cls, size, circuit_count, method="r", special=None, isomorphisms=True, max_iterations = 100000, interactive=True):
 
         ground_list = range(1, size+1)
         #circuits = [frozenset() for i in range(circuit_count)]
@@ -44,7 +47,8 @@ class Matroid():
             )
 
         sized_sets = itertools.combinations(list(viable_sets), circuit_count)
-        print("Generated Viable Decks")
+        if interactive:
+            print(f"Generated viable decks")
         match method:
             case "r":
                 sized_sets = list(sized_sets)
@@ -58,12 +62,21 @@ class Matroid():
                     else:
                         del sized_sets[r]
                     if iterations == max_iterations:
-                        print("Maximum generation iterations reached")
+                        if interactive:
+                            print("Maximum generation iterations reached")
             case "m":
-                circuits_set = [s for s in sized_sets if Matroid.is_circuit_set(s)]
-                print("Found All Circuits")
+                with multiprocessing.Pool() as pool:
+                    results = pool.imap_unordered(_filter_chunk, itertools.batched(sized_sets, 10000))
+                    circuits_set = []
+                    for batch in results:
+                        circuits_set.extend(batch)
+
+                #circuits_set = [s for s in sized_sets if Matroid.is_circuit_set(s)]
+                if interactive:
+                    print("Found All Circuits")
                 if isomorphisms == False:
-                    print("Removing Isomorphisms")
+                    if interactive:
+                        print("Removing Isomorphisms")
                     iso_set = set()
                     for p in itertools.permutations(ground_list):              
                         for i in range(len(circuits_set)):
@@ -74,11 +87,13 @@ class Matroid():
                                 if set(map(frozenset, permuted)) == set(map(frozenset, c2)):
                                     iso_set.add(c2)
                     circuits_set = set(circuits_set) - iso_set
-                                
-                print("Circuit sets:")
-                for s in circuits_set:
-                    print(tuple(map(set, tuple(s))))
-                circuits = eval(str(input("choose a circuit set")))
+                if interactive:           
+                    print("Circuit sets:")
+                    for s in circuits_set:
+                        print(tuple(map(set, tuple(s))))
+                    circuits = eval(str(input("choose a circuit set")))
+                else:
+                    return (tuple(map(set, tuple(s))) for s in circuits_set), ground_list
             case "":
                 NotImplemented
             case _:
