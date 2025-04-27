@@ -31,6 +31,37 @@ class Bingo():
                     done = True
         return winner
     
+    def card_probability(self, card_index):
+        cards = self.deck[:card_index] + self.deck[card_index+1:]
+        card = self.deck[card_index]
+        unions = []
+        for r in range(1, self.deck_size):
+            for combo in itertools.combinations(cards, r):
+                union_set = set().union(*combo).union(card)
+                unions.append((len(combo), len(union_set)))
+
+        partial = 1/len(self.deck[card_index])
+        for i in unions:
+            partial += (-1)**(i[0])/(i[1])
+
+        probability = len(self.deck[card_index])*partial
+        print(f"C{card_index+1}: {probability}")
+        return probability
+
+    def deck_probability(self, graph=True):
+        probabilities = []
+
+        for i in range(self.deck_size):
+            probabilities.append(self.card_probability(i))
+
+        if graph:
+            plt.scatter([f"C{i}" for i in range(1, self.deck_size+1)], probabilities, label="probabilities")
+            plt.xlabel("Cards")
+            plt.ylabel("value")
+            plt.title("Win Probability (Change formatting, and line fit)")
+            plt.legend()
+            plt.show()
+
     def brute_probability(self):
         self.brute_ran = True
         games = itertools.permutations(self.ground_set)
@@ -101,6 +132,15 @@ class Bingo():
         plt.legend()
         plt.show()
         
+    @staticmethod
+    def all_decks(size, circuit_count, method="m", special=None, isomorphisms=False, max_iterations = 100000, graph=True):
+        c_set, ground = Matroid.brute_generate(size=size, circuit_count=circuit_count, method=method, special=special, isomorphisms=isomorphisms, max_iterations = max_iterations, interactive=False)
+        
+        print(f"Ground set: {set(ground)}")
+        for c in c_set:
+            game = Bingo(Matroid(ground, c))
+            print(f"Deck: {tuple(map(set, game.deck))}")
+            game.deck_probability(graph=graph)
 
 ## Multidimensional bingo???/ abstraction of matroids
 
@@ -130,11 +170,13 @@ if __name__ == "__main__":
     # game2.probability_results()
 
 
-    game3 = Bingo(Matroid.brute_generate(5, 5, method="m", isomorphisms=False))
-    print(game3.deck)
-    game3.distribution_results()
-    game3.probability_results()
+    # game3 = Bingo(Matroid.brute_generate(5, 5, method="m", isomorphisms=False))
+    # print(game3.deck)
+    # game3.distribution_results()
+    # game3.probability_results()
+    # game3.deck_probability()
 
+    Bingo.all_decks(6, 6, graph=False)
 
     # game4 = Bingo(Matroid.brute_generate(5, 5))
     # print(game4.deck)
