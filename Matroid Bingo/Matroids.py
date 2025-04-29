@@ -24,6 +24,7 @@ from tqdm import tqdm
 # Better parallel processing
 # Random method
 # Check Untitled-2.py for any tricks
+# Add save generated circuits to file and read file
 
 
 # --- Debug Utilities ---
@@ -269,8 +270,6 @@ def remove_isomorphic_masks(
     return unique_sets
 
 
-# --- Main Class ---
-
 class Matroid:
     """
     Matroid with internal bitmask representation and set-based interface.
@@ -331,7 +330,7 @@ class Matroid:
     ) -> set[int]:
         """Get circuit at index: `index`"""
         return self.circuits[index]
-
+    
 
     def index(
         self, 
@@ -408,6 +407,7 @@ class Matroid:
 
             2. if method == "m" and if interactive == False
         """
+        print()
         if show_time:
             timer_obj = timer
             timed_obj = timed
@@ -508,15 +508,16 @@ class Matroid:
 
                 timed_obj(start, "Removed isomorphisms in:")
                 circuit_sets = unique_tup
-            
+
             print()
             print(f"Found {len(circuit_sets)} circuit sets")
             print()
-            
+
             if interactive:
-                print(f"{len(circuit_sets)} All circuit sets:")
+                print(f"All circuit sets:")
                 for i, cs in enumerate(circuit_sets):
                     print(i, tuple(bitmask_to_set(c, ground_size) for c in cs))
+                print()
                 choice = int(input("Select index: "))
                 chosen_circuits = circuit_sets[choice]
             else:
@@ -571,3 +572,4 @@ class Matroid:
 if __name__ == "__main__":
     #print(Matroid.generate(7, 6, method="r"))
     print(Matroid.generate(7, 6, method="m", show_time=True))
+    
