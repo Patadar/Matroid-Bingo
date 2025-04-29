@@ -294,10 +294,10 @@ class Matroid:
         self._cached_sets: Optional[tuple[set[int], ...]] = None
 
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         """Readable representation."""
         return (
-            f"Ground set: {self.ground_set}, "
+            f"Ground set: {self.ground_set}\n"
             f"Circuits: {self.circuits}"
         )
     
@@ -519,6 +519,7 @@ class Matroid:
                     print(i, tuple(bitmask_to_set(c, ground_size) for c in cs))
                 print()
                 choice = int(input("Select index: "))
+                print()
                 chosen_circuits = circuit_sets[choice]
             else:
                 return tuple([tuple([bitmask_to_set(c, ground_size) for c in cs]) for cs in circuit_sets]), set(ground_set)
