@@ -333,6 +333,14 @@ class Matroid:
         return self.circuits[index]
 
 
+    def index(
+        self, 
+        circuit: set
+    ) -> int:
+        """Get index of a circuit"""
+        return self.circuits.index(circuit)
+
+
     @property
     def ground_size(self) -> int:
         """Size of the ground set."""
