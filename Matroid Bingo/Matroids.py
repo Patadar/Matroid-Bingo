@@ -508,7 +508,11 @@ class Matroid:
 
                 timed_obj(start, "Removed isomorphisms in:")
                 circuit_sets = unique_tup
-
+            
+            print()
+            print(f"Found {len(circuit_sets)} circuit sets")
+            print()
+            
             if interactive:
                 print(f"{len(circuit_sets)} All circuit sets:")
                 for i, cs in enumerate(circuit_sets):
