@@ -382,7 +382,7 @@ class Matroid:
         batch_size: int = 100_000,
         max_iterations: int = 100_000,
         interactive: bool = True,
-        show_time: bool = False,
+        show_time: bool = True,
         #timing_mode: int = 0, docstring: timing_mode: 0 or 1, only if show_time = True, 1 shows bonus timing data.
     ) -> Matroid:
         """
