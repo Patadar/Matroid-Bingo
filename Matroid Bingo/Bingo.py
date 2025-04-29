@@ -190,12 +190,13 @@ class Bingo():
             max_iterations = max_iterations, 
             interactive=False, 
             show_time=show_time
-        )
+            )
         
         print(f"Ground set: {set(ground)}")
         for c in c_set:
+            print()
             game = Bingo(Matroid(len(ground), tuple(c)))
-            print(f"Deck: {game}")
+            print(f"Deck: {game.deck.circuits}")
             game.deck_probability(graph=graph)
 
 ## Multidimensional bingo???/ abstraction of matroids
@@ -217,7 +218,7 @@ if __name__ == "__main__":
     game3.probability_results()
     game3.deck_probability()
 
-    Bingo.all_decks(7, 6, special=[3,4,5,7], graph=False)
+    Bingo.all_decks(7, 5, special=[3,4,5,7], graph=False)
 
     Bingo.all_decks(6, 6, graph=False)
 
