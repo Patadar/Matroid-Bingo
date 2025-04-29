@@ -298,8 +298,8 @@ class Matroid:
     def __str__(self) -> str:
         """Readable representation."""
         return (
-            f"Ground set: {self.get_ground_set()}, "
-            f"Circuits: {self.circuits_as_sets()}"
+            f"Ground set: {self.ground_set}, "
+            f"Circuits: {self.circuits}"
         )
     
 
