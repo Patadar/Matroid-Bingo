@@ -2,4 +2,4 @@
 
 Uni Project: Matroid Bingo 
 
-Card creation, Bingo game, Probabiity calculation
+Card creation, Bingo game, Probability calculation
