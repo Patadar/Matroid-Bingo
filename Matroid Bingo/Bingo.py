@@ -10,6 +10,7 @@ import itertools
 import matplotlib.pyplot as plt
 import numpy as np
 from Matroids import Matroid
+import math
 
 
 # TODO:
@@ -50,7 +51,7 @@ class Bingo():
     def card_probability(
         self, 
         card_index: int,
-    ):
+    ) -> float:
         """Calculate the probability of a card winning Bingo in a specific Deck"""
         cards = self.deck[:card_index] + self.deck[card_index+1:]
         card = self.deck[card_index]
@@ -60,11 +61,11 @@ class Bingo():
                 union_set = set().union(*combo).union(card)
                 unions.append((len(combo), len(union_set)))
 
-        partial = 1/len(self.deck[card_index])
+        partial = 1/len(card)
         for i in unions:
             partial += (-1)**(i[0])/(i[1])
 
-        probability = len(self.deck[card_index])*partial
+        probability = len(card)*partial
         print(f"C{card_index+1}: {probability}")
         return probability
 
@@ -85,6 +86,70 @@ class Bingo():
             plt.title("Win Probability (Change formatting, and line fit)")
             plt.legend()
             plt.show()
+
+    def card_distribution(
+        self, 
+        card_index: int,
+    ) -> list[float]:
+        """Calculate the probability distribution of a card"""
+        cards = self.deck[:card_index] + self.deck[card_index+1:]
+        card = self.deck[card_index]
+        unions = []
+
+        for r in range(1, self.deck.circuit_count):
+            for combo in itertools.combinations(cards, r):
+                union_set = set().union(*combo).union(card)
+                unions.append((len(combo), len(union_set)))
+
+        distribution = []
+        n = self.deck.ground_size
+        for i in range(1, n+1):
+            if i < len(card):
+                distribution.append(0)
+            else:
+                partial = math.comb(n-len(card), i-len(card)) / math.comb(n-1, i-1)
+                for u in unions:
+                    if u[1]<=i:
+                        partial += (-1)**(u[0]) * (math.comb(n-u[1], i-u[1]) / math.comb(n-1, i-1))
+                distribution.append(len(card) * partial / n)
+        print(sum(distribution))
+        return distribution
+    
+    def deck_distribution(self) -> None:
+        """discrete probability distribution of each card in deck"""
+        distributions = []
+        rounds = range(1, self.deck.ground_size+1)
+
+        for i in range(self.deck.circuit_count):
+            distributions.append(self.card_distribution(i))
+
+        for i in range(self.deck.circuit_count):
+            plt.plot(rounds, distributions[i], label=f"C{i+1}")
+        plt.xlabel("Round")
+        plt.ylabel("Probability")
+        plt.title("Win Probability Distribution (Change formatting, and line fit)")
+        plt.legend()
+        plt.show()
+
+    def deck_cumulative(self) -> None:
+        """Cumulative probability distribution of each card in the deck"""
+        distributions = []
+        cumulative = []
+        rounds = range(1, self.deck.ground_size+1)
+
+        for i in range(self.deck.circuit_count):
+            distributions.append(self.card_distribution(i))
+
+        for i in range(self.deck.circuit_count):
+            cumulative.append([sum(distributions[i][:r+1]) for r in range(self.deck.ground_size)])
+
+        for i in range(self.deck.circuit_count):
+            plt.plot(rounds, cumulative[i], label=f"C{i+1}")
+        plt.xlabel("Round")
+        plt.ylabel("Cummulative Probability")
+        plt.title("Win Cummulative Probability Distribution (Change formatting, and line fit)")
+        plt.legend()
+        plt.show()
 
     def brute_probability(self):
         """Calculates the probability of winning of each card in the deck by playing every single possible game"""
@@ -198,6 +263,8 @@ class Bingo():
             game = Bingo(Matroid(len(ground), tuple(c)))
             print(f"Deck: {game.deck.circuits}")
             game.deck_probability(graph=graph)
+            game.deck_distribution()
+            game.deck_cumulative()
 
 ## Multidimensional bingo???/ abstraction of matroids
 
@@ -206,17 +273,28 @@ if __name__ == "__main__":
     # game1.distribution(iterations=1000)
     # game1.distribution_results()
     # game1.probability_results()
+    game2 = Bingo(Matroid(11, ({1,2,3,4,5},{6,7,8,9},{6,7,11},{7,8,10},{8,9,11},{9,10,6})))
+    game2.deck_probability()
+    game2.deck_distribution()
+    game2.deck_cumulative()
 
-    # game2 = Bingo(Matroid({1, 2, 3, 4, 5, 6, 7}, [{1, 2, 3, 4},{6, 7, 2, 3}, {4, 7, 5}, {1, 5, 6}, {1, 4, 7, 6}, {4, 5, 6, 2, 3}, {1, 5, 7, 2, 3}]))
-    # game2.distribution_results()
-    # game2.probability_results()
+    # game2 = Bingo(Matroid(17, ({1,2,3,4,5,6},{7,8,9, 10, 11}, {7,12,13},{8,14,15},{9,16,17},{8,9,10,11,12,13},{7,9,10,11,14,15},{7,8,10,11,16,17}, {10,11,12,13,14,15,16,17},{10,11,7,14,15,16,17},{10,11,12,13,8,16,17},{10,11,12,13,14,15,9})))
+    # game2.deck_probability()
+
+    # game2 = Bingo(Matroid(7, ({1,2},{3,4,5}, {5,6,7}, {3,4, 6, 7})))
+    # game2.deck_probability()
+
+    # game2 = Bingo(Matroid(15, ({1,2,3,4},{5,6,7},{5,8,9},{6,10,11},{7,12,13},{8,9,10,11,12,13},{5,6,12,13},{6,7,8,9},{5,7,10,11},{10,11,8,9,7},{10,11,12,13,5},{8,9,12,13,6},{5,14,15},{14,15,8,9},{14,15,6,12,13},{14,15,7,10,11},{10,11,8,9,7},{10,11,12,13,14,15},{8,9,12,13,6})))
+    # game2.deck_probability()
 
 
-    game3 = Bingo(Matroid.generate(5, 5, method="m", isomorphisms=False))
-    print(game3.deck)
-    game3.distribution_results()
-    game3.probability_results()
-    game3.deck_probability()
+    # game3 = Bingo(Matroid.generate(6, 6, method="m", isomorphisms=False))
+    # print(game3.deck)
+    # game3.distribution_results()
+    # game3.probability_results()
+    # game3.deck_probability()
+    # game3.deck_distribution
+    # game3.deck_cumulative()
 
     Bingo.all_decks(7, 5, special=[3,4,5,7], graph=False)
 
