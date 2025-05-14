@@ -10,6 +10,7 @@ import itertools
 import matplotlib.pyplot as plt
 import numpy as np
 from Matroids import Matroid
+from Matroids import is_circuit_set, set_to_bitmask
 import math
 
 
@@ -112,7 +113,7 @@ class Bingo():
                     if u[1]<=i:
                         partial += (-1)**(u[0]) * (math.comb(n-u[1], i-u[1]) / math.comb(n-1, i-1))
                 distribution.append(len(card) * partial / n)
-        print(sum(distribution))
+        #print(sum(distribution))
         return distribution
     
     def deck_distribution(self) -> None:
@@ -273,7 +274,33 @@ if __name__ == "__main__":
     # game1.distribution(iterations=1000)
     # game1.distribution_results()
     # game1.probability_results()
-    game2 = Bingo(Matroid(11, ({1,2,3,4,5},{6,7,8,9},{6,7,11},{7,8,10},{8,9,11},{9,10,6})))
+    game2 = Bingo(Matroid(9, ({1,2,3,4},{1,2,5},{3,4,5},{5,6},{6,7},{7,8},{8,9},{6,8},{7,9},{6,9},{5,7},{5,8},{5,9},{1,2,6},{3,4,6},{1,2,7},{3,4,7},{1,2,8},{3,4,8},{1,2,9},{3,4,9})))
+    print(is_circuit_set(np.array(list(map(set_to_bitmask, game2.deck.circuits)),dtype=np.int64)))
+    game2.deck_probability()
+    game2.deck_distribution()
+    game2.deck_cumulative()
+
+    game2 = Bingo(Matroid(10, ({1,2,3,4,5},{5,6,7,8},{5,9,6},{6,7,10},{7,8,9},{5,8,10})))
+    print(is_circuit_set(np.array(list(map(set_to_bitmask, game2.deck.circuits)),dtype=np.int64)))
+    game2.deck_probability()
+    game2.deck_distribution()
+    game2.deck_cumulative()
+
+    game2 = Bingo(Matroid(15, ({1,2,3,4,5},{6,7,8,9},{6,10,11},{7,12,13},{8,14,15},{10,11,12,13,14,15,9},{10,11,12,13,9,8},{10,11,14,15,9,7},{12,13,14,15,9,6},{7,8,9,10,11},{6,8,9,12,13},{6,7,9,14,15})))
+    print(is_circuit_set(np.array(list(map(set_to_bitmask, game2.deck.circuits)),dtype=np.int64)))
+    game2.deck_probability()
+    game2.deck_distribution()
+    game2.deck_cumulative()
+
+    game2 = Bingo(Matroid(13, ({1,2,3,4,5},{6,7,8,9},{6,7,11},{7,8,10},{8,9,11},{9,10,6},{1,2,3,4,12,13,7,8,9},{1,2,3,4,12,13,6},{1,2,3,4,12,13,7,11},{1,2,3,4,12,13,9,10},{5,12,13,7,8,9},{5,12,13,6},{5,12,13,7,11},{5,12,13,9,10},{6,8,11,10},{7,9,11,10},{5,12,13,8,11,10},{1,2,3,4,12,13,8,11,10})))
+    print(is_circuit_set(np.array(list(map(set_to_bitmask, game2.deck.circuits)),dtype=np.int64)))
+    game2.deck_probability()
+    game2.deck_distribution()
+    game2.deck_cumulative()
+
+    game2 = Bingo(Matroid(11, ({1,2,3,4,5},{6,7,8,9},{6,7,11},{7,8,10},{8,9,11},{9,10,6},{6,8,11,10},{7,9,11,10})))
+    print(list(map(bin, np.array(list(map(set_to_bitmask, game2.deck.circuits)),dtype=np.int64))))
+    print(is_circuit_set(np.array(list(map(set_to_bitmask, game2.deck.circuits)),dtype=np.int64)))
     game2.deck_probability()
     game2.deck_distribution()
     game2.deck_cumulative()
