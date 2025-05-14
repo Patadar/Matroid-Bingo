@@ -137,7 +137,7 @@ def _lsb_index(lsb: int) -> int:
 # --- Circuit Utilities ---
 
 
-@njit()
+#@njit()
 def is_circuit_set(circuits: np.ndarray) -> bool:
     """
     Validate that circuits satisfy all axioms.
@@ -159,12 +159,12 @@ def is_circuit_set(circuits: np.ndarray) -> bool:
             if common == 0:
                 continue
             
-            # Elimination axiom check
+            # subset axiom check
             if common == c1:
                 return False
             if common == c2:
                 return False
-            
+                          
             # Exchange axiom check
             union = c1 | c2
             while common:
@@ -179,7 +179,7 @@ def is_circuit_set(circuits: np.ndarray) -> bool:
                                 found = True
                                 break
                 if not found:
-                    return False
+                    return False    
     return True
 
 
@@ -268,6 +268,9 @@ def remove_isomorphic_masks(
             unique_sets[index, :] = all_circuits[i]
             index += 1
     return unique_sets
+
+
+# --- Main Class ---
 
 
 class Matroid:
@@ -573,4 +576,3 @@ class Matroid:
 if __name__ == "__main__":
     #print(Matroid.generate(7, 6, method="r"))
     print(Matroid.generate(7, 6, method="m", show_time=True))
-    
